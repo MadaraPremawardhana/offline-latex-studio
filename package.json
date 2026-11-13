@@ -1,0 +1,28 @@
+{
+  "name": "offline-latex-studio",
+  "version": "0.1.0",
+  "description": "Write and compile LaTeX reports, theses and slides fully offline.",
+  "author": "Madara Premawardhana",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.madara.offlinelatexstudio",
+    "productName": "Offline LaTeX Studio",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "preload.js", "src/**/*", "lib/**/*", "node_modules/**/*", "!node_modules/electron-builder/**"],
+    "win": { "target": ["portable"] }
+  },
+  "dependencies": {
+    "codemirror": "^5.65.16",
+    "simple-git": "^3.25.0",
+    "archiver": "^7.0.1"
+  },
+  "devDependencies": {
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
+  }
+}

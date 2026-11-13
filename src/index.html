@@ -1,0 +1,210 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Offline LaTeX Studio</title>
+<link rel="stylesheet" href="../node_modules/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Screen S: sign in / sign up -->
+<section class="screen" id="screen-signin">
+  <div class="centerbox">
+    <h1 class="brand">Offline LaTeX Studio</h1>
+    <div class="segmented" id="authTabs">
+      <button class="seg-btn active" data-tab="signin">Sign in</button>
+      <button class="seg-btn" data-tab="signup">Sign up</button>
+    </div>
+    <form id="authForm" class="card form">
+      <label>Email<input type="email" id="authEmail" required placeholder="you@example.com"></label>
+      <label>Password<input type="password" id="authPassword" required placeholder="••••••••"></label>
+      <button class="btn-primary" type="submit" id="authSubmit">Sign in</button>
+      <p class="error" id="authError" hidden></p>
+    </form>
+    <div class="divider"><span>or continue with</span></div>
+    <button class="btn-secondary wide" id="ssoGoogle">Continue with Google</button>
+    <button class="btn-secondary wide" id="ssoGithub">Continue with GitHub</button>
+    <label class="toggle-row"><span>Keep me signed in on this device</span><input type="checkbox" id="staySignedIn" checked></label>
+    <p class="hint" id="ssoHint" hidden></p>
+  </div>
+</section>
+
+<!-- Screen L: storage choice -->
+<section class="screen" id="screen-storage" hidden>
+  <div class="topbar"><h2>Where should your work live?</h2></div>
+  <div class="storage-grid">
+    <div class="card storage-card">
+      <h3>⌁ GitHub repository</h3>
+      <p class="muted">Sync with a repo you own. Every save becomes a branch, merged to main automatically when there's no conflict.</p>
+      <button class="btn-secondary wide" id="btnConnectGithub">Connect GitHub account</button>
+      <div id="githubTokenRow" hidden>
+        <label>Personal access token (repo scope)<input class="input wide" id="githubTokenInput" type="password" placeholder="ghp_…"></label>
+        <p class="hint">GitHub sign-in as an OAuth button needs an OAuth app registered on your own GitHub account — this build connects with a token instead, since that needs no app review and works the same way. <a href="#" id="tokenHelpLink">Where do I get one?</a></p>
+        <button class="btn-primary wide" id="btnConfirmGithubToken">Connect</button>
+      </div>
+      <div id="githubConnected" hidden>
+        <p class="muted small" id="githubUserLine"></p>
+        <select id="repoSelect" class="input wide"></select>
+        <button class="btn-secondary wide" id="btnChooseRepoFolder">Choose local folder for this repo…</button>
+        <p class="muted small" id="repoFolderLine"></p>
+        <button class="btn-primary wide" id="btnUseGithub">Use GitHub</button>
+      </div>
+      <p class="error" id="githubError" hidden></p>
+    </div>
+    <div class="card storage-card">
+      <h3>⌂ Offline drive</h3>
+      <p class="muted">Keep everything on this computer. No account needed to use this project.</p>
+      <button class="btn-secondary wide" id="btnChooseOfflineFolder">Choose folder…</button>
+      <p class="muted small" id="offlineFolderLine"></p>
+      <button class="btn-primary wide" id="btnUseOffline">Use offline drive</button>
+    </div>
+  </div>
+  <p class="muted center">You can change this later in Settings.</p>
+</section>
+
+<!-- Screen A: TeX setup -->
+<section class="screen" id="screen-setup" hidden>
+  <div class="centerbox wide-box">
+    <h2>Set up LaTeX</h2>
+    <div class="card" id="texDetectCard"><p>Checking for an existing TeX installation…</p></div>
+    <div class="card">
+      <label>Default engine
+        <select id="defaultEngine" class="input">
+          <option value="pdflatex">pdfLaTeX</option>
+          <option value="xelatex">XeLaTeX</option>
+          <option value="lualatex">LuaLaTeX</option>
+        </select>
+      </label>
+      <button class="btn-secondary wide" id="btnBrowseTexBin">Point at a TeX install folder…</button>
+      <button class="btn-secondary wide" id="btnInstallFromFolder">Add packages from a local folder / USB…</button>
+      <p class="muted small" id="packagesFoundLine"></p>
+    </div>
+    <button class="btn-primary wide" id="btnSetupContinue">Continue</button>
+  </div>
+</section>
+
+<!-- Screen B: project launcher -->
+<section class="screen" id="screen-launcher" hidden>
+  <div class="topbar">
+    <h2>Offline LaTeX Studio</h2>
+    <div class="row gap">
+      <input class="input" id="projectSearch" placeholder="Search projects…">
+      <button class="btn-secondary" id="btnOpenFolder">Open folder…</button>
+      <button class="btn-primary" id="btnNewProject">+ New project</button>
+      <button class="btn-text" id="btnOpenSettings">Settings</button>
+    </div>
+  </div>
+  <div class="list" id="projectList"></div>
+</section>
+
+<!-- Screen C: template gallery -->
+<section class="screen" id="screen-templates" hidden>
+  <div class="topbar"><button class="btn-text" id="backFromTemplates">&larr; Back</button><h2>New project</h2></div>
+  <div class="split">
+    <div class="grid" id="templateGrid"></div>
+    <div class="card form">
+      <label>Title<input class="input" id="newTitle" value="Untitled Project"></label>
+      <label>Author<input class="input" id="newAuthor"></label>
+      <label>Institution<input class="input" id="newInstitution"></label>
+      <label>Date<input class="input" id="newDate" value="\today"></label>
+      <label>Folder<div class="row gap"><input class="input" id="newFolder" readonly><button class="btn-secondary" id="btnPickNewFolder">Browse…</button></div></label>
+      <button class="btn-primary wide" id="btnCreateProject">Create</button>
+    </div>
+  </div>
+</section>
+
+<!-- Screen D/E/F: editor workspace -->
+<section class="screen" id="screen-editor" hidden>
+  <div class="topbar">
+    <button class="btn-text" id="backFromEditor">&larr; Projects</button>
+    <h2 id="editorProjectName">Project</h2>
+    <div class="row gap">
+      <button class="btn-primary" id="btnCompile">▶ Compile</button>
+      <select id="engineSelect" class="input small">
+        <option value="pdflatex">pdfLaTeX</option><option value="xelatex">XeLaTeX</option><option value="lualatex">LuaLaTeX</option>
+      </select>
+      <label class="toggle-row small"><span>Auto</span><input type="checkbox" id="autoCompile"></label>
+      <span id="saveModeBadge" class="badge"></span>
+      <button class="btn-secondary" id="btnSaveAction">Save</button>
+    </div>
+  </div>
+  <div class="editor-grid">
+    <aside class="panel">
+      <div class="panel-head">Files <button class="btn-icon" id="btnNewTexFile">+</button></div>
+      <div id="fileTree" class="tree"></div>
+      <div class="panel-head">Bibliography</div>
+      <div id="bibQuick" class="tree"></div>
+      <button class="btn-text" id="btnOpenBib">Manage references →</button>
+    </aside>
+    <div class="panel">
+      <div class="panel-head"><span id="currentFileName">main.tex</span></div>
+      <div id="codemirrorHost" class="cm-host"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span>Preview</span>
+        <button class="btn-text" id="btnOpenPdfExternal">Open in system viewer</button>
+      </div>
+      <iframe id="pdfFrame" class="pdf-frame"></iframe>
+      <div class="status-line" id="compileStatus">Not compiled yet.</div>
+    </div>
+  </div>
+  <div class="panel problems-panel">
+    <div class="panel-head">
+      <span id="problemsTitle">Problems</span>
+      <div class="row gap">
+        <button class="btn-text" id="btnShowRawLog">Raw log</button>
+        <button class="btn-text" id="btnCleanAux">🧹 Clean aux files</button>
+      </div>
+    </div>
+    <div id="problemsList" class="problems-list"></div>
+    <pre id="rawLog" class="raw-log" hidden></pre>
+  </div>
+</section>
+
+<!-- Bibliography overlay -->
+<section class="screen overlay" id="screen-bib" hidden>
+  <div class="topbar"><button class="btn-text" id="backFromBib">&larr; Back to editor</button><h2>Bibliography</h2>
+    <div class="row gap"><button class="btn-secondary" id="btnBibImport">Import .bib</button><button class="btn-secondary" id="btnBibNew">+ New entry</button></div>
+  </div>
+  <div class="split">
+    <div class="card"><input class="input wide" id="bibSearch" placeholder="⌕ Search references…"><div id="bibList" class="tree"></div></div>
+    <div class="card form" id="bibForm">
+      <label>Type<select class="input" id="bibType"><option>article</option><option>book</option><option>inproceedings</option><option>misc</option></select></label>
+      <label>Key<input class="input" id="bibKey"></label>
+      <label>Author<input class="input" id="bibAuthor"></label>
+      <label>Title<input class="input" id="bibTitle"></label>
+      <label>Year<input class="input" id="bibYear"></label>
+      <button class="btn-primary wide" id="btnBibSave">Save entry</button>
+    </div>
+  </div>
+</section>
+
+<!-- Settings overlay -->
+<section class="screen overlay" id="screen-settings" hidden>
+  <div class="topbar"><button class="btn-text" id="backFromSettings">&larr; Back</button><h2>Settings</h2></div>
+  <div class="card form narrow">
+    <h3>Compiler</h3>
+    <label>Engine<select class="input" id="setEngine"><option value="pdflatex">pdfLaTeX</option><option value="xelatex">XeLaTeX</option><option value="lualatex">LuaLaTeX</option></select></label>
+    <label>Bibliography tool<select class="input" id="setBibTool"><option>Biber</option><option>BibTeX</option></select></label>
+    <label class="toggle-row"><span>Use latexmk (re-runs until references settle)</span><input type="checkbox" id="setUseLatexmk"></label>
+    <label class="toggle-row"><span>Allow shell-escape (\write18) — runs programs from documents</span><input type="checkbox" id="setShellEscape"></label>
+    <label>Stop compile after (seconds)<input type="number" class="input" id="setTimeout"></label>
+    <h3>Editor</h3>
+    <label>Theme<select class="input" id="setTheme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    <label>Font size<input type="number" class="input" id="setFontSize"></label>
+    <h3>Storage</h3>
+    <p class="muted small" id="setStorageLine"></p>
+    <button class="btn-secondary wide" id="btnSwitchStorage">Switch storage mode…</button>
+    <h3>Account</h3>
+    <p class="muted small" id="setAccountLine"></p>
+    <button class="btn-text" id="btnSignOut">Sign out</button>
+  </div>
+</section>
+
+<script src="../node_modules/codemirror/lib/codemirror.js"></script>
+<script src="../node_modules/codemirror/mode/stex/stex.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
