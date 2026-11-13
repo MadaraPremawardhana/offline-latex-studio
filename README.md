@@ -14,14 +14,27 @@ npm install
 npm start
 ```
 
-## Build an installable copy
+## Build an installer
 
 ```
-npm run dist
+npm run dist:win     # Setup.exe (NSIS) + a portable .exe, on Windows
+npm run dist:mac     # .dmg + .zip, on macOS
+npm run dist:linux   # .AppImage + .deb, on Linux
 ```
 
-Produces a portable `.exe` in `dist/` — double-click to run, no installer step, nothing written
-outside the app's own folder (settings live in the usual Electron `userData` folder).
+Each only runs on its own OS — electron-builder can't cross-compile a real installer for a
+different platform. **Push a tag like `v0.1.0`** and `.github/workflows/build.yml` builds all
+three on GitHub's own Windows/macOS/Linux runners and attaches them to a GitHub Release; that's
+the easiest way to get installers for every OS without owning a Mac or a Linux box.
+
+The Windows `Setup.exe` is a normal NSIS wizard (pick a folder, Start Menu + desktop shortcuts,
+clean uninstall from "Apps & features"). The portable `.exe` still works for anyone who'd rather
+not install anything. Nothing is written outside the app's own folder either way (settings live
+in the usual per-OS app-data folder).
+
+If you build the Windows installer locally yourself: NSIS's packager (`makensis.exe`) can't open
+paths longer than Windows' ~260-character limit, so build from a short path (e.g. `C:\build\`),
+not deep inside something like a OneDrive-synced folder several levels down.
 
 ## What's functional in this build
 
