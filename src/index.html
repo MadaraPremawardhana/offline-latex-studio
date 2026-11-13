@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <title>Offline LaTeX Studio</title>
 <link rel="stylesheet" href="../node_modules/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="../node_modules/codemirror/addon/hint/show-hint.css">
+<link rel="stylesheet" href="../node_modules/codemirror/addon/dialog/dialog.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -36,18 +38,15 @@
   <div class="storage-grid">
     <div class="card storage-card">
       <h3>⌁ GitHub repository</h3>
-      <p class="muted">Sync with a repo you own. Every save becomes a branch, merged to main automatically when there's no conflict.</p>
+      <p class="muted">Each project gets its own private repository, created for you. Every save is committed on a new branch and merged to main automatically.</p>
       <button class="btn-secondary wide" id="btnConnectGithub">Connect GitHub account</button>
       <div id="githubTokenRow" hidden>
-        <label>Personal access token (repo scope)<input class="input wide" id="githubTokenInput" type="password" placeholder="ghp_…"></label>
-        <p class="hint">GitHub sign-in as an OAuth button needs an OAuth app registered on your own GitHub account — this build connects with a token instead, since that needs no app review and works the same way. <a href="#" id="tokenHelpLink">Where do I get one?</a></p>
+        <label>Personal access token<input class="input wide" id="githubTokenInput" type="password" placeholder="ghp_…"></label>
+        <p class="hint">Paste a GitHub token with the <b>repo</b> scope so the app can create repositories and commit to them. <a href="#" id="tokenHelpLink">Where do I get one?</a></p>
         <button class="btn-primary wide" id="btnConfirmGithubToken">Connect</button>
       </div>
       <div id="githubConnected" hidden>
         <p class="muted small" id="githubUserLine"></p>
-        <select id="repoSelect" class="input wide"></select>
-        <button class="btn-secondary wide" id="btnChooseRepoFolder">Choose local folder for this repo…</button>
-        <p class="muted small" id="repoFolderLine"></p>
         <button class="btn-primary wide" id="btnUseGithub">Use GitHub</button>
       </div>
       <p class="error" id="githubError" hidden></p>
@@ -108,7 +107,7 @@
       <label>Author<input class="input" id="newAuthor"></label>
       <label>Institution<input class="input" id="newInstitution"></label>
       <label>Date<input class="input" id="newDate" value="\today"></label>
-      <label>Folder<div class="row gap"><input class="input" id="newFolder" readonly><button class="btn-secondary" id="btnPickNewFolder">Browse…</button></div></label>
+      <label>Folder<div class="row gap"><input class="input" id="newFolder" readonly placeholder="Documents / Offline LaTeX Studio"><button class="btn-secondary" id="btnPickNewFolder">Browse…</button></div></label>
       <button class="btn-primary wide" id="btnCreateProject">Create</button>
     </div>
   </div>
@@ -120,13 +119,14 @@
     <button class="btn-text" id="backFromEditor">&larr; Projects</button>
     <h2 id="editorProjectName">Project</h2>
     <div class="row gap">
-      <button class="btn-primary" id="btnCompile">▶ Compile</button>
+      <button class="btn-primary" id="btnCompile" title="Ctrl+Enter">▶ Compile</button>
       <select id="engineSelect" class="input small">
         <option value="pdflatex">pdfLaTeX</option><option value="xelatex">XeLaTeX</option><option value="lualatex">LuaLaTeX</option>
       </select>
       <label class="toggle-row small"><span>Auto</span><input type="checkbox" id="autoCompile"></label>
       <span id="saveModeBadge" class="badge"></span>
-      <button class="btn-secondary" id="btnSaveAction">Save</button>
+      <button class="btn-text" id="btnHistory">History</button>
+      <button class="btn-secondary" id="btnSaveAction" title="Ctrl+S">Save</button>
     </div>
   </div>
   <div class="editor-grid">
@@ -139,14 +139,24 @@
     </aside>
     <div class="panel">
       <div class="panel-head"><span id="currentFileName">main.tex</span></div>
+      <div class="toolbar" id="editorToolbar"></div>
+      <div class="symbol-panel" id="symbolPanel" hidden>
+        <div class="segmented" id="symbolTabs"></div>
+        <div class="symbol-grid" id="symbolGrid"></div>
+      </div>
       <div id="codemirrorHost" class="cm-host"></div>
+      <div class="status-line" id="saveStatus">Changes are saved to this computer as you type.</div>
     </div>
     <div class="panel">
       <div class="panel-head">
         <span>Preview</span>
-        <button class="btn-text" id="btnOpenPdfExternal">Open in system viewer</button>
+        <div class="row gap">
+          <button class="btn-icon" id="btnZoomOut" title="Zoom out">−</button>
+          <button class="btn-icon" id="btnZoomIn" title="Zoom in">+</button>
+          <button class="btn-text" id="btnOpenPdfExternal">Open in system viewer</button>
+        </div>
       </div>
-      <iframe id="pdfFrame" class="pdf-frame"></iframe>
+      <div id="pdfView" class="pdf-frame"><p class="pdf-empty">Press ▶ Compile to see your document here.</p></div>
       <div class="status-line" id="compileStatus">Not compiled yet.</div>
     </div>
   </div>
@@ -203,8 +213,31 @@
   </div>
 </section>
 
+<!-- In-app dialog (text input / lists) -->
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="card modal-card">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="row gap modal-actions">
+      <button class="btn-secondary" id="modalCancel">Cancel</button>
+      <button class="btn-primary" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
 <script src="../node_modules/codemirror/lib/codemirror.js"></script>
 <script src="../node_modules/codemirror/mode/stex/stex.js"></script>
+<script src="../node_modules/codemirror/addon/hint/show-hint.js"></script>
+<script src="../node_modules/codemirror/addon/edit/closebrackets.js"></script>
+<script src="../node_modules/codemirror/addon/edit/matchbrackets.js"></script>
+<script src="../node_modules/codemirror/addon/comment/comment.js"></script>
+<script src="../node_modules/codemirror/addon/selection/active-line.js"></script>
+<script src="../node_modules/codemirror/addon/dialog/dialog.js"></script>
+<script src="../node_modules/codemirror/addon/search/searchcursor.js"></script>
+<script src="../node_modules/codemirror/addon/search/search.js"></script>
+<script src="vendor/pdf.worker.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="latex-tools.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

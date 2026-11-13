@@ -1,6 +1,6 @@
 {
   "name": "offline-latex-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Write and compile LaTeX reports, theses and slides fully offline.",
   "author": "Madara Premawardhana",
   "license": "MIT",
@@ -14,10 +14,32 @@
   "build": {
     "appId": "com.madara.offlinelatexstudio",
     "productName": "Offline LaTeX Studio",
-    "directories": { "output": "dist-build" },
-    "files": ["main.js", "preload.js", "src/**/*", "lib/**/*", "node_modules/**/*", "!node_modules/electron-builder/**"],
+    "directories": {
+      "output": "dist-build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "lib/**/*",
+      "node_modules/**/*",
+      "!node_modules/electron-builder/**"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "signAndEditExecutable": false
     },
     "nsis": {
@@ -27,18 +49,45 @@
       "createStartMenuShortcut": true
     },
     "mac": {
-      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }, { "target": "zip", "arch": ["x64", "arm64"] }],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
       "category": "public.app-category.productivity"
     },
     "linux": {
-      "target": [{ "target": "AppImage", "arch": ["x64"] }, { "target": "deb", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "category": "Office"
     }
   },
   "dependencies": {
-    "codemirror": "^5.65.16",
-    "simple-git": "^3.25.0",
-    "archiver": "^7.0.1"
+    "archiver": "^7.0.1",
+    "codemirror": "^5.65.16"
   },
   "devDependencies": {
     "electron": "^31.3.1",

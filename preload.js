@@ -22,8 +22,7 @@ contextBridge.exposeInMainWorld('api', {
   },
   github: {
     connect: (t) => on('github:connect', t),
-    listRepos: () => on('github:listRepos'),
-    linkRepo: (r, f) => on('github:linkRepo', r, f),
+    ensureRepo: (root) => on('github:ensureRepo', root),
     save: (root, msg) => on('github:save', root, msg)
   },
   projects: {
@@ -36,6 +35,7 @@ contextBridge.exposeInMainWorld('api', {
   fs: {
     tree: (root) => on('fs:tree', root),
     read: (file) => on('fs:read', file),
+    readBinary: (file) => on('fs:readBinary', file),
     write: (file, content) => on('fs:write', file, content),
     newFile: (root, rel) => on('fs:newFile', root, rel),
     addImage: (root) => on('fs:addImage', root)

@@ -22,8 +22,7 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      nodeIntegration: false,
-      plugins: true // lets Electron's built-in Chromium PDF viewer render the compiled PDF
+      nodeIntegration: false
     }
   });
   win.setMenuBarVisibility(false);
@@ -61,12 +60,14 @@ ipcMain.handle('storage:chooseFolder', async () => {
 });
 ipcMain.handle('storage:setMode', (_e, mode) => storage.setStorageMode(mode));
 ipcMain.handle('github:connect', (_e, token) => github.connect(token));
-ipcMain.handle('github:listRepos', () => github.listRepos());
-ipcMain.handle('github:linkRepo', (_e, repoFullName, localFolder) => github.linkRepo(repoFullName, localFolder));
+ipcMain.handle('github:ensureRepo', (_e, projectRoot) => github.ensureRepo(projectRoot));
 
 // ---------- IPC: projects ----------
 ipcMain.handle('projects:recent', () => storage.recentProjects());
-ipcMain.handle('projects:create', (_e, opts) => templates.createProject(opts));
+ipcMain.handle('projects:create', (_e, opts) => templates.createProject({
+  ...opts,
+  folder: opts.folder || storage.getSettings().projectsFolder || path.join(app.getPath('documents'), 'Offline LaTeX Studio')
+}));
 ipcMain.handle('projects:openFolder', async () => {
   const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] });
   if (r.canceled) return null;
@@ -78,6 +79,7 @@ ipcMain.handle('projects:saveAsTemplate', (_e, projectPath, name) => templates.s
 // ---------- IPC: file tree / editor ----------
 ipcMain.handle('fs:tree', (_e, root) => storage.fileTree(root));
 ipcMain.handle('fs:read', (_e, file) => fs.readFileSync(file, 'utf8'));
+ipcMain.handle('fs:readBinary', (_e, file) => fs.readFileSync(file));
 ipcMain.handle('fs:write', (_e, file, content) => { fs.writeFileSync(file, content, 'utf8'); return true; });
 ipcMain.handle('fs:newFile', (_e, root, relPath) => storage.newFile(root, relPath));
 ipcMain.handle('fs:addImage', async (_e, root) => {

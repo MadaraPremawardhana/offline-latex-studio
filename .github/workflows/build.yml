@@ -31,11 +31,11 @@ jobs:
         with:
           name: installer-${{ matrix.os }}
           path: |
-            dist/*.exe
-            dist/*.dmg
-            dist/*.zip
-            dist/*.AppImage
-            dist/*.deb
+            dist-build/*.exe
+            dist-build/*.dmg
+            dist-build/*.zip
+            dist-build/*.AppImage
+            dist-build/*.deb
           if-no-files-found: ignore
 
   release:
