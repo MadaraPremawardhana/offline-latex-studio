@@ -1,6 +1,6 @@
 {
   "name": "offline-latex-studio",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Write and compile LaTeX reports, theses and slides fully offline.",
   "author": "Madara Premawardhana",
   "license": "MIT",
@@ -84,7 +84,8 @@
       ],
       "category": "Office",
       "maintainer": "Madara Premawardhana <MadaraPremawardhana@users.noreply.github.com>"
-    }
+    },
+    "afterPack": "scripts/after-pack.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",
@@ -92,6 +93,7 @@
   },
   "devDependencies": {
     "electron": "^31.3.1",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "rcedit": "^4.0.1"
   }
 }
