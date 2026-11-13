@@ -82,7 +82,8 @@
           ]
         }
       ],
-      "category": "Office"
+      "category": "Office",
+      "maintainer": "Madara Premawardhana <MadaraPremawardhana@users.noreply.github.com>"
     }
   },
   "dependencies": {
